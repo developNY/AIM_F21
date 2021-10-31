@@ -1,8 +1,9 @@
 import torch
 
 
-class MyDataset(torch.utils.data.Dataset):
+class Dataset(torch.utils.data.Dataset):
     def __init__(self, tokenizer, label_dict, texts, labels):
+        super(Dataset, self).__init__()
         self.tokenizer = tokenizer
         self.label_dict = label_dict
         self.labels = labels  # categorize labels
