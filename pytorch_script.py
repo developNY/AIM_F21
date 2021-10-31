@@ -30,7 +30,7 @@ model = LitAutoEncoder()
 
 # training
 trainer = pl.Trainer(gpus=4, precision=16, limit_train_batches=0.5)
-trainer.fit(model, train_loader, val_loader)
+trainer.fit(model, train_generator, test_generator, dev_generator)
 
 
 # #loop over epochs
