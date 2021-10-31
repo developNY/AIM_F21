@@ -2,6 +2,7 @@ import torch
 import pandas as pd
 from transformers import BertTokenizer
 from torch.utils.data import DataLoader
+import pytorch_lightning as pl
 
 from dataset import Dataset
 from models import CEModel
@@ -11,7 +12,7 @@ def main():
     # initialize tokenizer
     tokenizer = BertTokenizer.from_pretrained('bert-base-cased')
     # set hyper-parameters
-    params = {'batch_size': 2, 'shuffle':True, 'num_workers': 6}
+    params = {'batch_size': 2, 'shuffle':True, 'num_workers': 1}
     max_epochs = 100
 
     # create datasets and generators
@@ -39,11 +40,12 @@ def main():
 
     # model
     model = CEModel(pretrained='bert-base-cased',
-                    num_class=len(label_dict))
+                    num_class=len(label_dict),
+                    loss_fn=torch.nn.CrossEntropyLoss())
 
     # training
-    #trainer = pl.Trainer(gpus=4, precision=16, limit_train_batches=0.5)
-    #trainer.fit(model, train_generator, test_generator, dev_generator)
+    trainer = pl.Trainer(gpus=0, precision=32)
+    trainer.fit(model, train_generator, test_generator)
 
 
     # #loop over epochs
