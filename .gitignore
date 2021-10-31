@@ -140,3 +140,4 @@ cython_debug/
 **/__pycache__
 **/*.py.swp
 **/.DS_Store
+**/.idea
