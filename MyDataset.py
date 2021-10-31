@@ -1,20 +1,20 @@
 import torch
 
-class MyDataset(torch.utils.data.Dataset):
 
-    def __init__(self, list_IDs, labels):
-        self.labels = labels
-        self.list_IDs = list_IDs
+class MyDataset(torch.utils.data.Dataset):
+    def __init__(self, tokenizer, label_dict, texts, labels):
+        self.tokenizer = tokenizer
+        self.label_dict = label_dict
+        self.labels = labels  # categorize labels
+        self.texts = texts
 
     def __len__(self):
-        return len(self.list_IDs)
+        return len(self.labels)
 
     def __getitem__(self, index):
-        # Select sample
-        ID = self.list_IDs[index]
-
-        # Load data and get label
-        X = torch.load('data/' + ID + '.pt')
-        y = self.labels[ID]
-
-        return X, y
+        text = self.texts[index]
+        text = self.tokenizer(text, padding='max_length',
+                              truncation=True)['input_ids']  # get token_ids only
+        label = self.labels[index]
+        label = self.label_dict[label]
+        return torch.tensor(text), torch.tensor(label)
