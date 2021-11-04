@@ -47,16 +47,9 @@ def main():
     trainer = pl.Trainer(gpus=0, precision=32)
     trainer.fit(model, train_generator, test_generator)
 
-
-    # #loop over epochs
-    # for epoch in range(max_epochs):
-    #     #Training
-    #     for local_batch, local_labels in training_generator:
-
-    #     #validation
-    #     with torch.set_grad_enabled(False):
-    #         for local_batch, local_labels in validation_generator:
-
+    #save
+        torch.save(model, './trained_model/model1')
+        torch.load('./trained_model/model1')
 
 if __name__ == '__main__':
     main()
