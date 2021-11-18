@@ -1,13 +1,18 @@
 import torch
+import torchmetrics
 from torch.nn import functional as F
 import pytorch_lightning as pl
-from transformers import BertModel
+from transformers import BertModel, DistilBertModel
 
 
 class CEModel(pl.LightningModule):
     def __init__(self, pretrained, num_class, loss_fn):
         super(CEModel, self).__init__()
-        self.pretrained = BertModel.from_pretrained(pretrained) # backbone
+        # backbone
+        if 'distil' in pretrained:
+            self.pretrained = DistilBertModel.from_pretrained(pretrained)
+        else:
+            self.pretrained = DBertModel.from_pretrained(pretrained)
         # dimension of backbone: 64 x 512 x 768 = batch-size x max_length x feature-size
         self.classifier = torch.nn.Sequential(
             torch.nn.Linear(768, 128),
@@ -40,7 +45,10 @@ class CEModel(pl.LightningModule):
 
         # compute loss
         loss = self.loss_fn(outputs, labels)
-        self.log('train_loss', loss)
+        acc = torchmetrics.functional.accuracy(outputs, labels)
+
+        self.log('train_loss', loss, on_step=True, prog_bar=True, logger=True)
+        self.log('train_acc', acc, on_step=True, prog_bar=True, logger=True)
         return loss
 
     def validation_step(self, val_batch, batch_idx):
@@ -51,4 +59,7 @@ class CEModel(pl.LightningModule):
 
         # compute loss
         loss = self.loss_fn(outputs, labels)
-        self.log('val_loss', loss)
+        acc = torchmetrics.functional.accuracy(outputs, labels)
+        self.log('val_loss', loss, on_step=True, prog_bar=True, logger=True)
+        self.log('val_acc', acc, on_step=True, prog_bar=True, logger=True)
+        return loss

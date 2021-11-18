@@ -1,6 +1,6 @@
 import torch
 import pandas as pd
-from transformers import BertTokenizer
+from transformers import BertTokenizer, DistilBertTokenizer
 from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 
@@ -53,10 +53,11 @@ def main():
 
 
 def seq_main():
+    pretrained = 'distilbert-base-cased'
     # initialize tokenizer
-    tokenizer = BertTokenizer.from_pretrained('bert-base-cased')
+    tokenizer = DistilBertTokenizer.from_pretrained(pretrained)
     # set hyper-parameters
-    params = {'batch_size': 8, 'shuffle': True, 'num_workers': 1}
+    params = {'batch_size': 2, 'shuffle': True, 'num_workers': 1}
     max_epochs = 100
 
     # create datasets and generators
@@ -84,7 +85,7 @@ def seq_main():
     #    input()
 
     # model
-    model = CEModel(pretrained='bert-base-cased',
+    model = CEModel(pretrained=pretrained,
                     num_class=len(label_dict),
                     loss_fn=torch.nn.CrossEntropyLoss())
 
