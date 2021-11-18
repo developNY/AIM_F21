@@ -4,7 +4,7 @@ from transformers import BertTokenizer
 from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 
-from dataset import Dataset
+from dataset import Dataset, SequenceDataset
 from models import CEModel
 
 
@@ -48,8 +48,55 @@ def main():
     trainer.fit(model, train_generator, test_generator)
 
     #save
-        torch.save(model, './trained_model/model1')
-        torch.load('./trained_model/model1')
+    torch.save(model, './trained_model/model1')
+    torch.load('./trained_model/model1')
+
+
+def seq_main():
+    # initialize tokenizer
+    tokenizer = BertTokenizer.from_pretrained('bert-base-cased')
+    # set hyper-parameters
+    params = {'batch_size': 8, 'shuffle': True, 'num_workers': 1}
+    max_epochs = 100
+
+    # create datasets and generators
+    dataset = pd.read_csv('./data/train_sent_emo.csv')
+    label_dict = {k: i for i, k in enumerate(set(dataset['Emotion']))} # get label dict
+    train_set = SequenceDataset(tokenizer=tokenizer,
+                          label_dict=label_dict,
+                          data='data/train_sent.pickle')
+    train_generator = DataLoader(train_set, **params)
+
+    dataset = pd.read_csv('./data/test_sent_emo.csv')
+    test_set = SequenceDataset(tokenizer=tokenizer,
+                         label_dict=label_dict,
+                         data='data/test_sent.pickle')
+    test_generator = DataLoader(test_set, **params)
+
+    dataset = pd.read_csv('./data/dev_sent_emo.csv')
+    dev_set = SequenceDataset(tokenizer=tokenizer,
+                        label_dict=label_dict,
+                        data='data/dev_sent.pickle')
+    dev_generator = DataLoader(dev_set, **params)
+
+    #for x in train_generator:
+    #    print(x[0].shape, x[-1])
+    #    input()
+
+    # model
+    model = CEModel(pretrained='bert-base-cased',
+                    num_class=len(label_dict),
+                    loss_fn=torch.nn.CrossEntropyLoss())
+
+    # training
+    trainer = pl.Trainer(gpus=0, precision=32)
+    trainer.fit(model, train_generator, test_generator)
+
+    #save
+    torch.save(model, './trained_model/model1')
+    torch.load('./trained_model/model1')
+
 
 if __name__ == '__main__':
-    main()
+    #main()
+    seq_main()
